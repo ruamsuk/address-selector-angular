@@ -45,8 +45,8 @@ export class ProvinceDistrictSubdistrictComponent implements OnInit {
 
   provinces: { label: string, value: number }[] = [];
   districts: { label: string, value: number }[] = [];
-  subdistricts: { label: string, value: number }[] = [];
-
+  subdistricts: { label: string, value: number, zipCode: string }[] = [];
+  // ใช้เก็บค่าที่เลือกจาก TreeSelect
   selectedProvinceValue: number | null = null;
   selectedDistrictValue: number | null = null;
 
@@ -94,12 +94,13 @@ export class ProvinceDistrictSubdistrictComponent implements OnInit {
         .map(subdistrict => ({
           label: subdistrict.name_th,
           value: subdistrict.id,
+          zipCode: subdistrict.zip_code,
         }));
       this.districtSelected.emit(event.node.label); // ส่งชื่ออำเภอกลับไปยัง Parent
     });
   }
 
   onSubdistrictChange(event: any): void {
-    this.subdistrictSelected.emit(event.node.label); // ส่งค่าตำบลกลับไปยัง Parent
+    this.subdistrictSelected.emit(event.node); // ส่งค่าตำบลและรหัส ปณ.กลับไปยัง Parent
   }
 }
