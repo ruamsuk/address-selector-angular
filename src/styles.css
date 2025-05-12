@@ -1,1 +1,72 @@
 /* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Pattaya&family=Thasadith&family=Sarabun&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Charmonman:wght@400;700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+@plugin "tailwindcss-primeui";
+@custom-variant dark (&:where(.my-app-dark, .my-app-dark *));
+
+@font-face {
+  font-family: 'Leelawadee UI';
+  src: url('./assets/fonts/LeelUIsl.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --font-sarabun: Sarabun, sans-serif;
+  --font-thasadith: Thasadith, sans-serif;
+  --font-leera: 'Leelawadee UI', sans-serif;
+  --toast-message-font-size: 1.125rem;
+  --toast-message-font-style: italic;
+}
+
+body {
+  font-family: var(--font-sarabun), sans-serif;
+  font-size: 1.125rem;
+}
+
+/* Add your custom styles here */
+.p-toast-message {
+  font-size: var(--toast-message-font-size);
+  font-style: var(--toast-message-font-style);
+}
+
+.p-toast-detail {
+  font-style: italic;
+  font-size: 1.125rem;
+}
+
+.p-toast-summary {
+  font-size: 1.125rem !important;
+}
+
+/* Form input */
+.merchant-form input[type="text"],
+.merchant-form input[type="email"] {
+  font-weight: 400;
+  border: 0;
+  border-bottom: 1px solid #b4becb;
+  width: 100%;
+  padding: 3px;
+}
+
+.merchant-form input[type="text"]:focus,
+.merchant-form input[type="email"]:focus {
+  outline: none;
+  border-bottom: 1px solid #007bff;
+}
+
+.merchant-form input[type="text"]:focus::placeholder,
+.merchant-form input[type="email"]:focus::placeholder {
+  color: #007bff;
+}
+
+.merchant-form input[type="text"]::placeholder,
+.merchant-form input[type="email"]::placeholder {
+  color: #94a3b8;
+  opacity: 0.5;
+}
