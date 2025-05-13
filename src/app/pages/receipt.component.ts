@@ -1,49 +1,98 @@
-import { Component } from '@angular/core';
-import { ProvinceDistrictSubdistrictComponent } from '../components/province-district-subdistrict.component';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, Observable, tap, throwError } from 'rxjs';
+import { CustomDatepickerComponent } from '../components/custom-datepicker.component';
+import { Merchant } from '../models/merchant.model';
+import { ReceiptDataService } from '../services/receipt-data.service';
+import { ToastService } from '../services/toast.service';
 import { SharedModule } from '../shared/shared.module';
 
 @Component({
   selector: 'app-receipt',
-  imports: [SharedModule, ProvinceDistrictSubdistrictComponent],
+  imports: [SharedModule, CustomDatepickerComponent],
   template: `
-    <div class="flex justify-center items-center my-5">
-      <app-province-district-subdistrict
-        [selectedProvince]="initialProvince"
-        [selectedDistrict]="initialDistrict"
-        [selectedSubdistrict]="initialSubdistrict"
-        (provinceSelected)="onProvinceSelected($event)"
-        (districtSelected)="onDistrictSelected($event)"
-        (subdistrictSelected)="onSubdistrictSelected($event)">
-      </app-province-district-subdistrict>
+    <div class="flex justify-center items-center mt-2 mx-2 md:mt-16">
+      <div class="card w-full max-w-4xl">
+        <h2 class="text-center text-2xl font-bold mb-4">ใบเสร็จรับเงิน</h2>
+        <div class="flex justify-between w-full">
+          <p>
+            <app-custom-datepicker
+              [selectedYearInput]="year"
+              [selectedMonthInput]="month"
+              (dateSelected)="onDateSelected($event)">
+              >
+            </app-custom-datepicker>
+          </p>
+          <p><span class="font-bold">เล่มที่:</span><span class="font-bold">เลขที่:</span></p>
+        </div>
+        @if (getMerchantData()) {
+          @for (merchant of getMerchantData(); track $index) {
+            <div class="mb-4">
+              <p-fieldset legend="ข้อมูลผู้ขาย">
+                <p><strong>ชื่อผู้ขาย</strong>: {{ merchant.companyName }}</p>
+                <p><strong>ที่อยู่</strong>:
+                  {{ merchant.address.homeStreet }}
+                  ตำบล{{ merchant.address.subdistrict }}
+                  อำเภอ{{ merchant.address.district }}
+                  จังหวัด{{ merchant.address.province }}
+                  , {{ merchant.address.zipCode }}</p>
+                <p><strong>เลขประจำตัวผู้เสียภาษี</strong>: {{ merchant.taxId }}
+                  <strong>โทรศัพท์</strong>: {{ merchant.phoneNumber }}</p>
+              </p-fieldset>
+            </div>
+          }
+        }
+      </div>
     </div>
-    <div class="flex items-center justify-center mt-4">
-      @if (zipCode) {
-        <p-message severity="info" text="รหัสไปรษณีย์: " icon="pi pi-info-circle" styleClass="mb-2">
-          <span class="text-green-400">{{ zipCode }}</span>
-        </p-message>
-      }
+    <div class="flex justify-center items-center mx-2">
+      <div class="card w-full max-w-4xl">
+        <p-fieldset legend="ข้อมูลผู้ซื้อ"></p-fieldset>
+      </div>
     </div>
+
   `,
   styles: ``
+
 })
-export class ReceiptComponent {
-  initialProvince: number | null = 1; // ค่าเริ่มต้นของจังหวัด
-  initialDistrict: number | null = 1001; // ค่าเริ่มต้นของอำเภอ
-  initialSubdistrict: number | null = 100101; // ค่าเริ่มต้นของตำบล
+export class ReceiptComponent implements OnInit {
+  merchantService = inject(ReceiptDataService);
+  toastService = inject(ToastService);
 
-  zipCode: string | null = null; // ใช้เก็บรหัสไปรษณีย์
+  year!: number | null;
+  month!: number | null;
+  dateSelected!: { year: number; month: number; day: number };
 
-  onProvinceSelected(provinceId: string): void {
-    console.log('Province Selected:', provinceId);
+
+  loading = signal(false);
+
+  ngOnInit(): void {
+    this.getMerchantData();
   }
 
-  onDistrictSelected(districtId: string): void {
-    console.log('District Selected:', districtId);
+  getMerchantData = toSignal(
+    (this.merchantService.getMerchantData() as Observable<Merchant[]>)
+      .pipe(
+        tap(() => this.loading.set(false)),
+        catchError((error: any) => {
+            this.toastService.showError('', `Error fetching data: ${error.message}`);
+            return throwError(() => error);
+          }
+        )
+      ),
+    {initialValue: []}
+  );
+
+  onDateSelected(date: { year: number; month: number; day: number }) {
+    console.log('Date Selected: ', date);
+    const formattedDate = this.formatDateForFirestore(date);
+    console.log('Formatted Date:', formattedDate);
   }
 
-  onSubdistrictSelected(subdistrictId: any): void {
-    console.log('Subdistrict Selected:', subdistrictId.label);
-    console.log('Subdistrict ZipCode:', subdistrictId.zipCode);
-    this.zipCode = subdistrictId.zipCode;
+  formatDateForFirestore(date: { year: any, month: any, day: number }): { year: number, month: number, day: number } {
+    return {
+      year: date.year.value - 543, // แปลงพุทธศักราชเป็นคริสตศักราช
+      month: date.month.value,     // เดือนที่ถูกเลือก
+      day: date.day                // วันที่ถูกเลือก
+    };
   }
 }

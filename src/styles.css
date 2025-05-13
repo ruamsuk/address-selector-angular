@@ -26,7 +26,7 @@
 
 body {
   font-family: var(--font-sarabun), sans-serif;
-  font-size: 1.125rem;
+  font-size: 1rem;
 }
 
 /* Add your custom styles here */
@@ -52,6 +52,7 @@ body {
   border-bottom: 1px solid #b4becb;
   width: 100%;
   padding: 3px;
+  line-height: 1.5;
 }
 
 .merchant-form input[type="text"]:focus,

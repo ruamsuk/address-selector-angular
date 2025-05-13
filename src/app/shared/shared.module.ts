@@ -11,6 +11,7 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { FieldsetModule } from 'primeng/fieldset';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { GalleriaModule } from 'primeng/galleria';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -70,6 +71,7 @@ import { TreeSelectModule } from 'primeng/treeselect';
     ToggleSwitchModule,
     MessageModule,
     ToolbarModule,
+    FieldsetModule
   ],
   exports: [
     AvatarModule,
@@ -107,6 +109,7 @@ import { TreeSelectModule } from 'primeng/treeselect';
     ToggleSwitchModule,
     MessageModule,
     ToolbarModule,
+    FieldsetModule
   ],
 })
 export class SharedModule {
