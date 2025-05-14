@@ -12,14 +12,14 @@ import { SharedModule } from '../shared/shared.module';
       <!-- Province Selector -->
       <p-treeSelect
         [options]="provinces"
-        placeholder="เลือกจังหวัด"
+        placeholder="จังหวัด"
         (onNodeSelect)="onProvinceChange($event)">
       </p-treeSelect>
 
       <!-- District Selector -->
       <p-treeSelect
         [options]="districts"
-        placeholder="เลือกอำเภอ/เขต"
+        placeholder="อำเภอ/เขต"
         (onNodeSelect)="onDistrictChange($event)"
         [disabled]="!selectedProvinceValue">
       </p-treeSelect>
@@ -27,7 +27,7 @@ import { SharedModule } from '../shared/shared.module';
       <!-- Subdistrict Selector -->
       <p-treeSelect
         [options]="subdistricts"
-        placeholder="เลือกตำบล/แขวง"
+        placeholder="ตำบล/แขวง"
         (onNodeSelect)="onSubdistrictChange($event)"
         [disabled]="!selectedDistrictValue">
       </p-treeSelect>

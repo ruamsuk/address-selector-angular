@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
+import { PrimeNG } from 'primeng/config';
 import { Toast } from 'primeng/toast';
+import { Observable } from 'rxjs';
 import { HeaderComponent } from './pages/header.component';
 
 @Component({
@@ -18,8 +22,25 @@ import { HeaderComponent } from './pages/header.component';
   `,
   styles: [],
 })
-export class AppComponent {
-  title = 'print-receipt';
+export class AppComponent implements OnInit {
+  ngOnInit(): void {
+    this.getTranslations()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((translations) => {
+        this.primeng.setTranslation(translations);
+      });
+  }
+
+  private primeng: PrimeNG = inject(PrimeNG);
+  private destroyRef: DestroyRef = inject(DestroyRef);
+
+
+  constructor(private http: HttpClient) {
+  }
+
+  getTranslations(): Observable<any> {
+    return this.http.get<any>('/assets/i18n/th.json');
+  }
 
   /** * Sample code for a simple Angular component that uses a dropdown to select provinces, districts, and subdistricts.
 
