@@ -25,6 +25,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TextareaModule } from 'primeng/textarea';
 import { TieredMenuModule } from 'primeng/tieredmenu';
@@ -43,6 +44,7 @@ import { TreeSelectModule } from 'primeng/treeselect';
     ConfirmDialogModule,
     DatePickerModule,
     TreeSelectModule,
+    SelectModule,
     CalendarModule,
     ConfirmPopupModule,
     ConfirmDialogModule,
@@ -80,6 +82,7 @@ import { TreeSelectModule } from 'primeng/treeselect';
     CardModule,
     ConfirmDialogModule,
     DatePickerModule,
+    SelectModule,
     TreeSelectModule,
     CalendarModule,
     ConfirmPopupModule,

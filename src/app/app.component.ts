@@ -3,13 +3,13 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
 import { PrimeNG } from 'primeng/config';
-import { Toast } from 'primeng/toast';
 import { Observable } from 'rxjs';
 import { HeaderComponent } from './pages/header.component';
+import { SharedModule } from './shared/shared.module';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Toast, HeaderComponent],
+  imports: [RouterOutlet, SharedModule, HeaderComponent],
   template: `
     <p-toast/>
     <app-header/>

@@ -7,7 +7,7 @@ import { SharedModule } from '../shared/shared.module';
   selector: 'app-header',
   imports: [SharedModule, NgOptimizedImage, RouterLink],
   template: `
-    <div class="mx-1">
+    <div class="mx-1 navbar-print">
       <p-toolbar styleClass="shadow-md"
                  [style]="{ 'border-radius': '2rem', 'padding': '1rem 1rem 1rem 1.5rem' }">
         <ng-template #start>
@@ -21,7 +21,7 @@ import { SharedModule } from '../shared/shared.module';
         </ng-template>
         <ng-template #center>
           <div class="flex items-center gap-2">
-            <p-button label="สร้างใบเสร็จ" routerLink="/receipt" variant="text"/>
+            <p-button label="สร้างใบเสร็จ" routerLink="/new-receipt" variant="text"/>
             <p-button label="ตั้งค่าผู้ขาย" routerLink="/merchant-form" variant="text"/>
             <p-button label="View" variant="text"/>
           </div>

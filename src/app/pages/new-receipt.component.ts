@@ -5,22 +5,27 @@ import { Router } from '@angular/router';
 import { bahttext } from 'bahttext';
 import { NgxCurrencyDirective } from 'ngx-currency';
 import { catchError, Observable, tap, throwError } from 'rxjs';
-import { ProvinceDistrictSubdistrictComponent } from '../components/province-district-subdistrict.component';
+import { AddressSelectComponent } from '../components/address-select.component';
 import { Merchant } from '../models/merchant.model';
+import { ReceiptItem } from '../models/receipt-data.model';
+import { AddressService } from '../services/address.service';
 import { ReceiptDataService } from '../services/receipt-data.service';
 import { ToastService } from '../services/toast.service';
 import { SharedModule } from '../shared/shared.module';
 
 @Component({
-  selector: 'app-receipt',
-  imports: [SharedModule, ProvinceDistrictSubdistrictComponent, NgxCurrencyDirective],
+  selector: 'app-new-receipt',
+  imports: [SharedModule, AddressSelectComponent, NgxCurrencyDirective],
   template: `
     <div class="flex justify-center items-center mt-2 mx-2 md:mt-16">
       <div class="card w-full max-w-4xl">
-        <h2 class="text-center text-2xl font-bold mb-4">สร้างใบเสร็จรับเงิน</h2>
+        <h2 class="text-center text-2xl font-bold mb-4">
+          ใบเสร็จรับเงิน / ใบกำกับภาษี
+        </h2>
+        <!-- ข้อมูลผู้ขาย จาก Firestore -->
         @if (getMerchantData()) {
           @for (merchant of getMerchantData(); track $index) {
-            <div class="mb-4">
+            <div class="mb-4 leading-8">
               <p-fieldset legend="ข้อมูลผู้ขาย">
                 <p><strong>ชื่อผู้ขาย</strong>: {{ merchant.companyName }}</p>
                 <p><strong>ที่อยู่</strong>:
@@ -37,6 +42,7 @@ import { SharedModule } from '../shared/shared.module';
         }
       </div>
     </div>
+    <!-- ข้อมูลผู้ซื้อ กรอกเอง -->
     <div class="flex justify-center items-center mx-2">
       <form [formGroup]="receiptForm" (ngSubmit)="onSubmit()">
         <div class="card w-full max-w-4xl">
@@ -68,11 +74,12 @@ import { SharedModule } from '../shared/shared.module';
               <div>
                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
                        for="customerAddressSelector">จังหวัด อำเภอ ตำบล</label>
-                <app-province-district-subdistrict
-                  (provinceSelected)="onProvinceSelected($event)"
-                  (districtSelected)="onDistrictSelected($event)"
-                  (subdistrictSelected)="onSubdistrictSelected($event)">>
-                </app-province-district-subdistrict>
+                <app-address-select
+                  [initialProvince]="formData?.customer?.province"
+                  [initialDistrict]="formData?.customer?.district"
+                  [initialSubdistrict]="formData?.customer?.subdistrict"
+                  (addressSelected)="onAddressSelected($event)">
+                </app-address-select>
               </div>
               <div>
                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="customerZipCode">รหัสไปรษณีย์</label>
@@ -81,8 +88,8 @@ import { SharedModule } from '../shared/shared.module';
               </div>
             </div>
           </p-fieldset>
-        </div>
-        <div class="card w-full max-w-4xl">
+
+          <!-- ข้อมูลใบเสร็จ -->
           <p-fieldset legend="ข้อมูลใบเสร็จ">
             <div class="grid grid-cols-3 gap-4" formGroupName="receiptInfo">
               <div>
@@ -109,100 +116,93 @@ import { SharedModule } from '../shared/shared.module';
               </div>
             </div>
           </p-fieldset>
-          <div class="card w-full max-w-4xl">
-            <div class="mb-4 border-b border-gray-300 pb-2">
+
+          <!-- รายการสินค้า -->
+          <div class="card w-full max-w-4xl mt-4">
+            <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
               <h3 class="font-semibold mb-2">รายการสินค้า/บริการ</h3>
               <div formArrayName="items">
-                <div>
-                  @for (item of items.controls; track item; let i = $index) {
-                    <div class="flex items-center gap-4" [formGroupName]="i">
-                      <div class="flex-1/4">
-                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
-                               [for]="'itemName' + i">รายการ {{ i + 1 }}</label>
-                        <input type="text" [id]="'itemName' + i" formControlName="name"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
-                      </div>
-                      <div class="flex-1/6">
-                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
-                               [for]="'quantity' + i">จำนวน</label>
-                        <input type="number" [id]="'quantity' + i" formControlName="quantity" min="1"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
-                      </div>
-                      <div class="flex-1/5">
-                        <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
-                               [for]="'unitPrice' + i">หน่วยละ</label>
-                        <input currencyMask [id]="'unitPrice' + i" formControlName="unitPrice" min="0"
-                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
-                      </div>
-                      <div class="flex-1/6">
-                        <div class="text-right text-red-600 font-semibold mt-7">
-                          {{ (item.get('quantity')?.value * item.get('unitPrice')?.value) | number:'1.2-2' }}
-                        </div>
-                      </div>
-                      <div class="flex-1 mt-7">
-                        <p-button (click)="removeItem(i)" icon="pi pi-times" severity="secondary"/>
+                @for (item of items.controls; track item; let i = $index) {
+                  <div class="flex items-center gap-4" [formGroupName]="i">
+                    <div class="flex-1/4">
+                      <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
+                             [for]="'itemName' + i">รายการ {{ i + 1 }}</label>
+                      <input type="text" [id]="'itemName' + i" formControlName="name"
+                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex-1/6">
+                      <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
+                             [for]="'quantity' + i">จำนวน</label>
+                      <input type="number" [id]="'quantity' + i" formControlName="quantity" min="1"
+                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex-1/5">
+                      <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2"
+                             [for]="'unitPrice' + i">หน่วยละ</label>
+                      <input currencyMask [id]="'unitPrice' + i" formControlName="unitPrice" min="0"
+                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline">
+                    </div>
+                    <div class="flex-1/6">
+                      <div class="text-right text-red-600 font-semibold mt-7">
+                        {{ (item.get('quantity')?.value * item.get('unitPrice')?.value) | number:'1.2-2' }}
                       </div>
                     </div>
-                  }
-                </div>
-                <div class="my-3">
-                  <p-button (click)="addItem()" label="เพิ่มรายการ" icon="pi pi-plus" class="p-button-rounded"/>
-                </div>
+                    <div class="flex-1 mt-7">
+                      <p-button (click)="removeItem(i)" icon="pi pi-times" severity="secondary"/>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="my-3">
+                <p-button (click)="addItem()" label="เพิ่มรายการ" icon="pi pi-plus" class="p-button-rounded"/>
               </div>
             </div>
           </div>
-          <div class="flex justify-between items-center my-3">
+        </div>
+        <div class="flex justify-between items-center my-3">
+          @if (receiptForm.get('totalAmount')?.value) {
             <div>({{ bahttext(receiptForm.get('totalAmount')?.value) }})</div>
-          </div>
-
-          <div class="mb-4 text-right">
-            <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="vatRate">อัตราภาษีมูลค่าเพิ่ม
-              (%)</label>
-            <input type="number" id="vatRate" formControlName="vatRate" min="0" max="100"
-                   class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-            %
-          </div>
+          }
+        </div>
+        <div class="mb-4 text-right">
+          <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="vatRate">อัตราภาษีมูลค่าเพิ่ม
+            (%)</label>
+          <input type="number" id="vatRate" formControlName="vatRate" min="0" max="100"
+                 class="shadow appearance-none border rounded w-1/4 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+          %
         </div>
         <div class="mb-4 text-right">
           <p>มูลค่ารวมก่อนเสียภาษี: {{ receiptForm.get('subtotal')?.value | number:'1.2-2' }}</p>
           <p>ภาษีมูลค่าเพิ่ม (VAT): {{ receiptForm.get('vatAmount')?.value | number:'1.2-2' }}</p>
           <h3 class="font-bold">ยอดรวม: {{ receiptForm.get('totalAmount')?.value | number:'1.2-2' }}</h3>
         </div>
-
-
-        <div class="mb-5">
-          <button type="submit" (click)="onSubmit()"
-                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            สร้างใบเสร็จ
-          </button>
+        <div class="flex justify-center">
+          <p-button type="submit" label="สร้างใบเสร็จ" icon="pi pi-check"/>
         </div>
       </form>
     </div>
-
   `,
   styles: ``
-
 })
-export class ReceiptComponent implements OnInit {
+export class NewReceiptComponent implements OnInit {
+  addressService = inject(AddressService);
   merchantService = inject(ReceiptDataService);
   toastService = inject(ToastService);
   router = inject(Router);
   fb = inject(FormBuilder);
+  loading = signal(true);
+
   receiptForm!: FormGroup;
-
-  year!: number | null;
-  month!: number | null;
-  dateSelected!: { year: number; month: number; day: number };
-
-
-  loading = signal(false);
+  formData: any;
 
   ngOnInit(): void {
-    this.getMerchantData();
     this.receiptForm = this.fb.group({
       customer: this.fb.group({
         name: ['', Validators.required],
         address: [''],
+        province: [''],
+        district: [''],
+        subdistrict: [''],
         taxId: [''],
         phone: [''],
         zipCode: ['']
@@ -218,7 +218,6 @@ export class ReceiptComponent implements OnInit {
       vatAmount: [0],
       totalAmount: [0]
     });
-
     this.items.valueChanges.subscribe(() => {
       this.calculateTotals();
     });
@@ -226,13 +225,33 @@ export class ReceiptComponent implements OnInit {
     this.receiptForm.get('vatRate')?.valueChanges.subscribe(() => {
       this.calculateTotals();
     });
-    this.receiptForm.get('customer.zipCode')?.reset();
+
+    // this.receiptForm.get('customer.zipCode')?.reset();
+    this.loadFormDataFromLocalStorage();
   }
 
+  // Fetch merchant data from the service
+  getMerchantData = toSignal(
+    (this.merchantService.getMerchantData() as Observable<Merchant[]>)
+      .pipe(
+        tap(() => this.loading.set(false)),
+        catchError((error: any) => {
+            this.toastService.showError('', `Error fetching data: ${error.message}`);
+            return throwError(() => error);
+          }
+        )
+      ),
+    {
+      initialValue: []
+    }
+  );
+
+  // Getters for form controls
   get items(): FormArray {
     return this.receiptForm.get('items') as FormArray;
   }
 
+  // Create a new item form group
   createItem(): FormGroup {
     return this.fb.group({
       name: ['', Validators.required],
@@ -241,6 +260,7 @@ export class ReceiptComponent implements OnInit {
     });
   }
 
+  // Create a new receipt item
   addItem(): void {
     this.items.push(this.createItem());
   }
@@ -265,52 +285,65 @@ export class ReceiptComponent implements OnInit {
     this.receiptForm.patchValue({totalAmount: subtotal + vatAmount});
   }
 
-  getMerchantData = toSignal(
-    (this.merchantService.getMerchantData() as Observable<Merchant[]>)
-      .pipe(
-        tap(() => this.loading.set(false)),
-        catchError((error: any) => {
-            this.toastService.showError('', `Error fetching data: ${error.message}`);
-            return throwError(() => error);
-          }
-        )
-      ),
-    {initialValue: []}
-  );
 
-  onDateSelected(date: { year: number; month: number; day: number }) {
-    console.log('Date Selected: ', date);
-    const formattedDate = this.formatDateForFirestore(date);
-    console.log('Formatted Date:', formattedDate);
+  // Handle address selection from the address select component
+  onAddressSelected(address: any): void {
+    this.receiptForm.patchValue({
+      customer: {
+        province: address.province,
+        district: address.district,
+        subdistrict: address.subdistrict,
+        zipCode: address.zipCode,
+      },
+    });
   }
 
-  formatDateForFirestore(date: { year: any, month: any, day: number }): { year: number, month: number, day: number } {
-    return {
-      year: date.year.value - 543, // แปลงพุทธศักราชเป็นคริสตศักราช
-      month: date.month.value,     // เดือนที่ถูกเลือก
-      day: date.day                // วันที่ถูกเลือก
-    };
-  }
+  // Get the data from local storage
+  loadFormDataFromLocalStorage(): void {
+    const savedData = localStorage.getItem('receiptData');
+    if (savedData) {
+      this.formData = JSON.parse(savedData);
+      this.receiptForm.patchValue(this.formData);
+      console.log('this.formData', JSON.stringify(this.formData, null, 2));
 
-  onSubmit(): void {
-    if (this.receiptForm.valid) {
-      const receiptData = this.receiptForm.value;
-      this.router.navigate(['/receipt-template'], {state: {receiptData}});
-      console.log('Navigating to receipt-template with data:', receiptData);
+      if (this.formData.customer.zipCode) {
+        this.receiptForm.get('customer.zipCode')?.setValue(this.formData.customer.zipCode);
+        console.log('this.formData.customer.zipCode', this.receiptForm.get('customer.zipCode')?.value);
+      }
+
+      if (this.formData.receiptInfo.date) {
+        const date = new Date(this.formData.receiptInfo.date);
+        this.receiptForm.get('receiptInfo.date')?.setValue(date);
+      }
+
+      if (this.formData.items && Array.isArray(this.formData.items)) {
+        this.formData.items.forEach((item: ReceiptItem) => {
+          const newItem = this.fb.group({
+            name: [item.name],
+            quantity: [item.quantity],
+            unitPrice: [item.unitPrice],
+          });
+          this.items.push(newItem);
+        });
+      }
     }
   }
 
-  onProvinceSelected($event: string) {
 
+  // Handle form submission
+  onSubmit(): void {
+    if (this.receiptForm.valid) {
+      const receiptData = this.receiptForm.value;
+
+      // บันทึกข้อมูลลงใน localStorage โดยไม่แปลง ID เป็นชื่อ
+      localStorage.setItem('receiptData', JSON.stringify(receiptData));
+
+      // ส่งข้อมูลไปยัง Receipt Template
+      console.log('Navigating to receipt-template with data:', receiptData);
+      this.router.navigate(['/receipt-template'], {state: {receiptData}});
+    }
   }
 
-  onDistrictSelected($event: string) {
-
-  }
-
-  onSubdistrictSelected(event: any) {
-    this.receiptForm.get('customer.zipCode')?.setValue(event.zipCode);
-  }
-
+  // Function to convert amount to Thai Baht text
   protected readonly bahttext = bahttext;
 }
