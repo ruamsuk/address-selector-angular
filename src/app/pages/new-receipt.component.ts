@@ -4,11 +4,11 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { bahttext } from 'bahttext';
 import { NgxCurrencyDirective } from 'ngx-currency';
+import { ConfirmationService } from 'primeng/api';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { AddressSelectComponent } from '../components/address-select.component';
 import { Merchant } from '../models/merchant.model';
 import { ReceiptItem } from '../models/receipt-data.model';
-import { AddressService } from '../services/address.service';
 import { ReceiptDataService } from '../services/receipt-data.service';
 import { ToastService } from '../services/toast.service';
 import { SharedModule } from '../shared/shared.module';
@@ -17,11 +17,13 @@ import { SharedModule } from '../shared/shared.module';
   selector: 'app-new-receipt',
   imports: [SharedModule, AddressSelectComponent, NgxCurrencyDirective],
   template: `
+
     <div class="flex justify-center items-center mt-2 mx-2 md:mt-16">
       <div class="card w-full max-w-4xl">
         <h2 class="text-center text-2xl font-bold mb-4">
           ใบเสร็จรับเงิน / ใบกำกับภาษี
         </h2>
+
         <!-- ข้อมูลผู้ขาย จาก Firestore -->
         @if (getMerchantData()) {
           @for (merchant of getMerchantData(); track $index) {
@@ -43,6 +45,23 @@ import { SharedModule } from '../shared/shared.module';
       </div>
     </div>
     <!-- ข้อมูลผู้ซื้อ กรอกเอง -->
+    <div class="flex justify-center items-center mt-2 mx-2 md:mt-16">
+      <div class="w-full max-w-4xl">
+        @if (localStorage.getItem('receiptData')) {
+          <p-fieldset>
+            <p-button
+              label="Clear Form"
+              icon="pi pi-check-square"
+              severity="secondary" (click)="resetForm($event)" class="mx-2"/>
+            <p-button
+              label="Clear Memory"
+              icon="pi pi-clipboard"
+              severity="secondary"
+              iconPos="right" (click)="resetMemory($event)"/>
+          </p-fieldset>
+        }
+      </div>
+    </div>
     <div class="flex justify-center items-center mx-2">
       <form [formGroup]="receiptForm" (ngSubmit)="onSubmit()">
         <div class="card w-full max-w-4xl">
@@ -78,13 +97,15 @@ import { SharedModule } from '../shared/shared.module';
                   [initialProvince]="formData?.customer?.province"
                   [initialDistrict]="formData?.customer?.district"
                   [initialSubdistrict]="formData?.customer?.subdistrict"
+                  [initialZipCode]="formData?.customer?.zipCode"
                   (addressSelected)="onAddressSelected($event)">
                 </app-address-select>
               </div>
               <div>
                 <label class="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" for="customerZipCode">รหัสไปรษณีย์</label>
-                <input id="customerZipCode" formControlName="zipCode" readonly
+                <input id="customerZipCode" formControlName="zipCode" value="formData?.customer?.zipCode" readonly
                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-300 leading-tight focus:outline-none focus:shadow-outline"/>
+
               </div>
             </div>
           </p-fieldset>
@@ -185,8 +206,8 @@ import { SharedModule } from '../shared/shared.module';
   styles: ``
 })
 export class NewReceiptComponent implements OnInit {
-  addressService = inject(AddressService);
   merchantService = inject(ReceiptDataService);
+  confirmationService = inject(ConfirmationService);
   toastService = inject(ToastService);
   router = inject(Router);
   fb = inject(FormBuilder);
@@ -346,4 +367,49 @@ export class NewReceiptComponent implements OnInit {
 
   // Function to convert amount to Thai Baht text
   protected readonly bahttext = bahttext;
+
+  resetForm(event: Event): void {
+    event.stopPropagation();
+
+    this.confirmationService.confirm({
+      target: event.target as HTMLElement,
+      message: 'ต้องการล้างข้อมูลในฟอร์ม แน่ใจหรือไม่?',
+      header: 'Clear Form',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        // Perform the delete action
+        this.receiptForm.reset();
+        this.toastService.showSuccess('Success', 'Data deleted successfully');
+      },
+      reject: () => {
+        // Handle rejection
+        this.toastService.showError('Error', 'Data deletion cancelled');
+      }
+    });
+  }
+
+  resetMemory(event: Event): void {
+    event.stopPropagation();
+
+    this.confirmationService.confirm({
+      target: event.target as HTMLElement,
+      message: 'ต้องการลบข้อมูลในระบบ ข้อมูลที่กรอกไว้จะหายไปถาวร\n แน่ใจ?',
+      header: 'Delete Local Storage',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        // Perform the delete action
+        localStorage.removeItem('receiptData');
+        this.receiptForm.reset();
+        this.items.clear();
+        this.toastService.showSuccess('Success', 'Data deleted successfully');
+      },
+      reject: () => {
+        // Handle rejection
+        this.toastService.showError('Error', 'Data deletion cancelled');
+      }
+    });
+
+  }
+
+  protected readonly localStorage = localStorage;
 }

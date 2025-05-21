@@ -12,6 +12,7 @@ import { SharedModule } from './shared/shared.module';
   imports: [RouterOutlet, SharedModule, HeaderComponent],
   template: `
     <p-toast/>
+    <p-confirmdialog></p-confirmdialog>
     <app-header/>
 
 

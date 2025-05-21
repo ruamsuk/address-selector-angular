@@ -203,6 +203,10 @@ export class ReceiptTemplateComponent implements OnInit {
     return this.receiptData?.items || [];
   }
 
+  get zipCode(): string {
+    return this.receiptData?.customer.zipCode || '';
+  }
+
   get subtotal(): number {
     return this.receiptData?.subtotal || 0;
   }

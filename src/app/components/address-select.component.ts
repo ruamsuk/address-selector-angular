@@ -43,13 +43,13 @@ import { SharedModule } from '../shared/shared.module';
       </p-select>
 
       <!-- Zip Code Display -->
-      <!--<input
+      <input
         type="text"
         pInputText
         id="zipCode"
         [value]="zipCode"
         placeholder="รหัส ปณ."
-        class="w-20" readonly>-->
+        class="w-20" readonly>
     </div>
   `,
   styles: ``
@@ -61,6 +61,7 @@ export class AddressSelectComponent implements OnInit {
   @Input() initialProvince: number | null = null; // รับค่าจังหวัดเริ่มต้นจาก Parent
   @Input() initialDistrict: number | null = null; // รับค่าอำเภอเริ่มต้นจาก Parent
   @Input() initialSubdistrict: number | null = null; // รับค่าตำบลเริ่มต้นจาก Parent
+  @Input() initialZipCode: number | null = null; // รับค่าตำบลเริ่มต้นจาก Parent
 
   @Output() addressSelected = new EventEmitter<any>(); // ส่งข้อมูลที่อยู่กลับไปยัง Parent
 
@@ -88,6 +89,10 @@ export class AddressSelectComponent implements OnInit {
       console.log('Selected Subdistrict: ', this.initialSubdistrict);
       this.selectedSubdistrict = this.initialSubdistrict;
       this.onSubdistrictChange({value: this.initialSubdistrict});
+    }
+    if (this.initialZipCode) {
+      console.log('Selected Zip Code: ', this.initialZipCode);
+      this.zipCode = this.initialZipCode.toString();
     }
   }
 
