@@ -1,59 +1,16 @@
-# PrintReceipt
+## รายละเอียด
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.11.
+- **ชื่อโครงการ**: ระบบจัดการข้อมูลใบเสร็จรับเงิน
+- **ผู้พัฒนา**: [วัฒนพร ร่วมสุข]
 
-## Development server
+- โครงการนี้ใช้ในการจัดการข้อมูลใบเสร็จรับเงิน โดยมีการพัฒนาในภาษา TypeScript (Angular 19.2.0, PrimeNG v.19.1.2, TailwindCSS v.4.1.5 ดูใน package.json) และใช้ฐานข้อมูล Firestore database สำหรับการจัดเก็บข้อมูล
 
-To start a local development server, run:
+ไฟล์ที่ไม่ใช้ คือ
 
-```bash
-ng serve
-```
+- **province-district-subdistrict.component.ts**: ไฟล์นี้เป็นไฟล์ที่ใช้ในการจัดการข้อมูลจังหวัด อำเภอ และตำบล โดยมีการดึงข้อมูลจาก JSON และใช้ component p-treeselect ซึ่งอยู่ใน PrimeNG มันไม่จำเป็นใช้แค่ p-select ก็พอแล้ว จึงลบทิ้ง แล้วสร้างใหม่
+- **address-select.component.ts**: ไฟล์นี้เป็นไฟล์ที่ใช้ในการแสดงผลข้อมูลจังหวัด อำเภอ และตำบล โดยมีการใช้ component p-select ซึ่งอยู่ใน PrimeNG แทนอันที่ลบไป
+- **dialog-print.component.ts**: ไฟล์นี้ไม่ได้ใช้ ทำทดลองการพิมพ์ใบเสร็จรับเงิน โดยใช้ window.print() แต่ไม่ได้ใช้ เพราะจะพิมพ์ออกมาเป็นแบบหน้าไดอล็อกทุกอย่าง และตั้งค่าไม่ได้
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- นอกนั้นก็ใช้หมด service ต่างๆ ที่สร้างขึ้นมาในโปรเจคนี้ interface ต้่างๆ ใช้ทุกอัน ยังต้องการปรับปรุงอีกเยอะ เป็นงานแดิเรก ไม่ต้องรีบร้อน
