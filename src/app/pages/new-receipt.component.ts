@@ -328,7 +328,12 @@ export class NewReceiptComponent implements OnInit {
       console.log('this.formData', JSON.stringify(this.formData, null, 2));
 
       if (this.formData.customer.zipCode) {
-        this.receiptForm.get('customer.zipCode')?.setValue(this.formData.customer.zipCode);
+        this.receiptForm.patchValue({
+          customer: {
+            zipCode: this.formData.customer.zipCode,
+          }
+        });
+        // this.receiptForm.get('customer.zipCode')?.setValue(this.formData.customer.zipCode);
         console.log('this.formData.customer.zipCode', this.receiptForm.get('customer.zipCode')?.value);
       }
 
