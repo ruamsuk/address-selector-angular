@@ -361,6 +361,10 @@ export class NewReceiptComponent implements OnInit {
     if (this.receiptForm.valid) {
       const receiptData = this.receiptForm.value;
 
+      // Delete the existing data in localStorage
+      if (localStorage.getItem('receiptData')) {
+        localStorage.removeItem('receiptData');
+      }
       // บันทึกข้อมูลลงใน localStorage โดยไม่แปลง ID เป็นชื่อ
       localStorage.setItem('receiptData', JSON.stringify(receiptData));
 
