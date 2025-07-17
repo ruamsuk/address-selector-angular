@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "print-receipt-6fdc9"
+  },
+  "targets": {
+    "print-receipt-6fdc9": {
+      "hosting": {
+        "print-receipt": [
+          "print-receipt-6fdc9"
+        ],
+        "member-system": [
+          "member-system-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
